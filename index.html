@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DIGITAL EMDZ — متجر المنتجات الرقمية</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/store-v2.css">
+</head>
+<body>
+<header class="glass">
+<a class="logo" href="#home">DIGITAL <span>EMDZ</span></a>
+<nav><a href="#home">الرئيسية</a><a href="#products">المنتجات</a><a href="#about">من نحن</a><a href="#payments">الدفع</a><a href="#contact">اتصل بنا</a></nav>
+<div class="actions"><button id="cartBtn">🛒 <b id="cartCount">0</b></button><a class="admin" href="admin.html">الإدارة</a></div>
+</header>
+<main>
+<section id="home" class="hero"><div><p class="eyebrow">DIGITAL EMDZ • DISCOVER • CREATE • GROW</p><h1>اكتشف عالم<br><span>المنتجات الرقمية</span></h1><p class="hero-copy">أدوات وقوالب وملفات رقمية تساعدك على العمل بشكل أسرع، تنظيم أفكارك، وإنجاز المزيد.</p><div class="hero-buttons"><a href="#products" class="btn primary">تصفح المنتجات</a><a href="#payments" class="btn ghost">طرق الدفع</a></div></div><div class="hero-card glass"><div class="orb"></div><strong>Premium Digital Store</strong><small>Templates • Planners • Ebooks • Tools • Bundles</small></div></section>
+<section id="products" class="section"><div class="section-head"><div><p class="eyebrow">OUR PRODUCTS</p><h2>منتجاتنا</h2></div><div id="categories" class="chips"></div></div><div id="productGrid" class="grid"></div></section>
+<section id="about" class="section about glass"><p class="eyebrow">ABOUT DIGITAL EMDZ</p><h2>منتجات رقمية مصممة لتسهّل عملك.</h2><p>منصة رقمية حديثة لعرض وبيع القوالب، المخططات، الكتب الإلكترونية، الأدوات والحزم الرقمية، مع إدارة المنتجات ووسائل الدفع من لوحة تحكم واحدة.</p></section>
+<section id="payments" class="section"><p class="eyebrow">PAYMENT METHODS</p><h2>طرق الدفع</h2><p class="muted">اختر وسيلة الدفع المناسبة واتبع التعليمات عند إتمام طلبك.</p><div id="paymentMethods" class="payments-public"><p class="muted">جارٍ تحميل وسائل الدفع...</p></div></section>
+<section id="contact" class="section"><p class="eyebrow">CONTACT</p><h2>تواصل معنا</h2><div class="contact-grid"><div class="contact-card glass"><strong>واتساب</strong><a id="contactWhatsApp" class="contact-link ltr" href="https://wa.me/213770913494">+213 770 913 494</a></div><div class="contact-card glass"><strong>البريد الإلكتروني</strong><a id="contactEmail" class="contact-link ltr" href="mailto:digitalemdz@gmail.com">digitalemdz@gmail.com</a></div></div></section>
+</main>
+<aside id="cartPanel" class="cart-panel"><div class="cart-head"><h2>سلة المشتريات</h2><button id="closeCart">×</button></div><div id="cartItems"></div></aside>
+<footer>© <span id="year"></span> DIGITAL EMDZ — Discover • Create • Grow</footer>
+<script>document.querySelector('#year').textContent=new Date().getFullYear();</script>
+<script type="module" src="js/store-v2.js"></script>
+</body></html>
