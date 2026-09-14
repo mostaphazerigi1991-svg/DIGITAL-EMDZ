@@ -1,77 +1,18 @@
 <!doctype html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>DIGITAL EMDZ — متجر المنتجات الرقمية</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/store-v2.css">
 <style>
-:root{--wa:#25D366;--wa-dark:#128C7E}
-html{scroll-behavior:auto}
-.section{scroll-margin-top:125px}
-.contact-thumb{width:56px;height:56px;object-fit:contain;border-radius:14px;background:#070d19;padding:5px}
-#dynamicContacts{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-top:18px}
-.service-box{max-width:900px;margin:22px auto 0;padding:24px;border:1px solid #334155;border-radius:22px;background:rgba(11,18,32,.65);box-shadow:0 20px 50px rgba(0,0,0,.2)}
-.service-form{display:grid;gap:12px}.service-form .two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.service-form input,.service-form textarea,.service-form select{width:100%;background:#0b1220;color:#fff;border:1px solid #334155;border-radius:12px;padding:13px;font:inherit}.service-form textarea{min-height:120px;resize:vertical}
-.service-note{font-size:13px;color:#94a3b8}.success-message{color:#86efac!important}
-.service-notify-buttons{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:4px}.service-notify-btn{min-height:56px;display:flex;align-items:center;justify-content:center;gap:10px;border-radius:15px;text-decoration:none;font-weight:800;font-size:16px;border:1px solid rgba(255,255,255,.12)}
-.service-wa{background:linear-gradient(135deg,#25D366,#12b85a);color:#fff}.service-email{background:linear-gradient(135deg,#8b5cf6,#3b82f6);color:#fff}
-.whatsapp-icon{background:var(--wa)!important;color:#fff!important;box-shadow:0 10px 28px rgba(37,211,102,.18)!important}.whatsapp-link{color:#fff!important}
-.payment-note{margin-top:14px;padding:12px 15px;border:1px solid rgba(59,130,246,.22);border-radius:14px;background:rgba(59,130,246,.07);color:#94a3b8;font-size:13px}
-.about-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:24px}.about-item{padding:20px;border:1px solid #1e293b;border-radius:18px;background:rgba(3,7,18,.3)}.about-item strong{display:block;margin-bottom:8px}.about-item p{margin:0;color:#94a3b8;line-height:1.9}
-.section-nav-lock{scroll-margin-top:125px}
-@media(max-width:700px){.service-form .two,.service-notify-buttons,.about-grid{grid-template-columns:1fr}}
-</style>
-</head>
+.page-shell{max-width:1240px;margin:auto;padding:70px 22px}.home-hero{min-height:600px;display:grid;grid-template-columns:1.1fr .9fr;gap:55px;align-items:center}.hero-copy-wrap{max-width:720px}.hero-badge{display:inline-block;padding:8px 14px;border-radius:999px;background:rgba(139,92,246,.13);border:1px solid rgba(139,92,246,.3);font-weight:800;color:#ddd6fe}.home-hero h1{font-size:clamp(46px,7vw,82px);line-height:1.08;margin:18px 0}.home-hero h1 span{background:linear-gradient(90deg,#c4b5fd,#60a5fa);-webkit-background-clip:text;color:transparent}.hero-copy{font-size:18px;line-height:2;color:#cbd5e1}.hero-buttons{display:flex;gap:12px;flex-wrap:wrap;margin-top:28px}.hero-visual{height:420px;border-radius:34px;position:relative;display:grid;place-items:center;overflow:hidden}.visual-glow{position:absolute;width:300px;height:300px;border-radius:50%;background:linear-gradient(135deg,#8b5cf6,#3b82f6);filter:blur(70px);opacity:.45}.visual-center{text-align:center;position:relative}.visual-logo{width:110px;height:110px;margin:auto;border-radius:30px;display:grid;place-items:center;background:linear-gradient(135deg,#8b5cf6,#3b82f6);font-size:38px;font-weight:900}.visual-center strong{display:block;font-size:25px;margin-top:18px}.visual-center small{color:#94a3b8}.quick-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:25px}.quick-card{padding:22px;border-radius:22px}.quick-card b{display:block;font-size:18px;margin-bottom:7px}.quick-card span{color:#94a3b8;font-size:13px;line-height:1.8}.wa-card{border-color:rgba(37,211,102,.25)}.wa-card .quick-icon{background:#25D366}.quick-icon{width:48px;height:48px;border-radius:14px;display:grid;place-items:center;background:linear-gradient(135deg,#8b5cf6,#3b82f6);margin-bottom:14px;font-size:23px}
+@media(max-width:850px){.home-hero{grid-template-columns:1fr;padding-top:25px}.hero-visual{height:320px}.quick-grid{grid-template-columns:1fr 1fr}}@media(max-width:520px){.quick-grid{grid-template-columns:1fr}.page-shell{padding:45px 15px}}
+</style></head>
 <body>
-<div class="topbar"><div class="topbar-inner"><span class="topbar-hook">✨ حلول رقمية جاهزة — ابدأ اليوم ووفّر وقتك</span><div class="topbar-links"><a id="topWhatsApp" class="whatsapp-link" href="https://wa.me/213770913494" target="_blank" rel="noopener">💬 واتساب</a><a id="topEmail" href="mailto:digitalemdz@gmail.com">✉️ digitalemdz@gmail.com</a></div></div></div>
-<header class="glass">
-<a class="logo" href="#home">DIGITAL <span>EMDZ</span></a>
-<nav aria-label="التنقل الرئيسي"><a href="#home">الرئيسية</a><a href="#products">المنتجات</a><a href="#payments">الدفع</a><a href="#about">من نحن</a><a href="#services">الخدمات</a><a href="#contact">اتصل بنا</a></nav>
-<div class="actions"><button id="shareSite" class="btn ghost">🔗 مشاركة الموقع</button><a class="admin" href="admin-v2.html">⚙️ الإدارة</a><button id="cartBtn" aria-label="سلة المشتريات">🛒 <b id="cartCount">0</b></button></div>
-</header>
-<main>
-<section id="home" class="hero section-nav-lock">
-<div class="hero-copy-wrap"><span class="hero-badge">🔥 منتجات رقمية • جاهزة للاستخدام</span><p class="eyebrow">DIGITAL EMDZ • DISCOVER • CREATE • GROW</p><h1>حوّل فكرتك إلى<br><span>إنجاز أسرع.</span></h1><p class="hero-copy">قوالب، مخططات، كتب إلكترونية وأدوات رقمية مختارة لتساعدك على العمل بذكاء، تنظيم وقتك، وتحقيق المزيد.</p><div class="hero-buttons"><a href="#products" class="btn primary section-link">🚀 تصفح المنتجات</a><a href="#payments" class="btn ghost section-link">💳 طرق الدفع</a><a href="#services" class="btn ghost section-link">🛎️ اطلب خدمة</a><button id="shareSiteHero" class="btn ghost">🔗 مشاركة</button></div><div class="trust-row"><span>✓ منتجات رقمية</span><span>✓ دفع مرن</span><span>✓ دعم مباشر</span></div></div>
-<div class="hero-visual glass"><div class="visual-glow"></div><div class="floating-card fc-one">📁 <strong>Digital Files</strong><small>جاهزة للاستخدام</small></div><div class="floating-card fc-two">⚡ <strong>Work Smarter</strong><small>وفّر وقتك</small></div><div class="visual-center"><div class="visual-logo">DE</div><strong>DIGITAL EMDZ</strong><small>Discover • Create • Grow</small></div></div>
-</section>
-<section id="products" class="section section-nav-lock"><div class="section-head"><div><p class="eyebrow">OUR PRODUCTS</p><h2>منتجاتنا</h2><p class="muted">جميع المنتجات تظهر هنا مباشرة. استخدم التصنيفات للوصول لما تريد.</p></div><div id="categories" class="chips"></div></div><div id="productGrid" class="grid" aria-live="polite"></div></section>
-<section id="payments" class="section section-nav-lock"><p class="eyebrow">PAYMENT METHODS</p><h2>طرق الدفع</h2><p class="muted">اختر وسيلة الدفع المناسبة واتبع التعليمات الظاهرة في البطاقة.</p><div id="paymentMethods" class="payments-public"><p class="muted">جارٍ تحميل وسائل الدفع...</p></div><div class="payment-note">💳 وسائل الدفع والحسابات والصور والتعليمات تُدار بالكامل من لوحة الإدارة، ويمكنك تعديلها أو تعطيلها أو حذفها في أي وقت.</div></section>
-<section id="about" class="section about glass section-nav-lock"><p class="eyebrow">ABOUT DIGITAL EMDZ</p><h2>من نحن</h2><p>Digital EMDZ منصة متخصصة في المنتجات الرقمية، هدفها توفير أدوات وحلول عملية تساعدك على التعلم والعمل والتنظيم وإنجاز المهام بشكل أسرع.</p><div class="about-grid"><div class="about-item"><strong>🎯 رؤيتنا</strong><p>تقديم تجربة بسيطة واحترافية للوصول إلى منتجات رقمية مفيدة في مكان واحد.</p></div><div class="about-item"><strong>⚡ مهمتنا</strong><p>توفير قوالب وكتب وأدوات وحزم رقمية جاهزة وسهلة الاستخدام.</p></div><div class="about-item"><strong>🤝 دعمنا</strong><p>نحرص على توفير قنوات تواصل مباشرة لمساعدتك قبل وبعد الطلب.</p></div></div></section>
-<section id="services" class="section section-nav-lock"><p class="eyebrow">CUSTOM SERVICES</p><h2>🛎️ اطلب خدمة مخصصة</h2><p class="muted">تحتاج تصميمًا، قالبًا، تعديل ملف أو متجرًا؟ أرسل التفاصيل وسنتواصل معك.</p><div class="service-box"><form id="serviceForm" class="service-form"><div class="two"><input name="name" placeholder="الاسم الكامل" required><input name="email" type="email" placeholder="البريد الإلكتروني" required></div><div class="two"><input name="phone" placeholder="رقم الهاتف / واتساب (اختياري)"><select name="service" required><option value="">اختر نوع الخدمة</option><option>تصميم منتج رقمي</option><option>تعديل قالب</option><option>تصميم Canva</option><option>إنشاء متجر إلكتروني</option><option>كتاب إلكتروني / PDF</option><option>خدمة مخصصة أخرى</option></select></div><textarea name="message" placeholder="اشرح لنا ما تحتاجه بالتفصيل..." required></textarea><p class="service-note">سنستخدم بياناتك فقط للتواصل معك بخصوص طلب الخدمة.</p><button class="btn primary" type="submit">🚀 إرسال طلب الخدمة</button><p id="serviceMessage" class="muted"></p></form></div></section>
-<section id="contact" class="section section-nav-lock"><p class="eyebrow">CONTACT US</p><h2 id="contactTitle">اتصل بنا</h2><p class="muted">للاستفسارات والطلبات والدعم، اختر وسيلة التواصل المناسبة.</p><div class="contact-grid"><a id="contactWhatsApp" class="contact-card glass contact-link-card" href="https://wa.me/213770913494" target="_blank" rel="noopener"><span class="contact-icon whatsapp-icon">💬</span><span><strong>واتساب</strong><small>تواصل معنا مباشرة</small><b class="contact-value ltr">+213 770 913 494</b></span></a><a id="contactEmail" class="contact-card glass contact-link-card" href="mailto:digitalemdz@gmail.com"><span class="contact-icon email-icon">✉️</span><span><strong>البريد الإلكتروني</strong><small>للدعم والاستفسارات</small><b class="contact-value ltr">digitalemdz@gmail.com</b></span></a></div><div id="dynamicContacts"></div></section>
-<section id="privacy" class="section section-nav-lock"><p class="eyebrow">PRIVACY</p><h2>الخصوصية</h2><p class="muted">نستخدم المعلومات التي ترسلها فقط لمعالجة الطلبات والتواصل والدعم. لا نحتاج إلى عنوان شحن للمنتجات الرقمية، ونوصي بعدم إرسال كلمات المرور أو البيانات السرية عبر نموذج التواصل.</p></section>
-</main>
-<a id="whatsappFloat" class="whatsapp-float" href="https://wa.me/213770913494" target="_blank" rel="noopener" aria-label="واتساب" title="واتساب"><span style="font-size:28px">💬</span></a>
-<aside id="cartPanel" class="cart-panel"><div class="cart-head"><h2>سلة المشتريات</h2><button id="closeCart">×</button></div><div id="cartItems"></div></aside>
-<footer>© <span id="year"></span> DIGITAL EMDZ — Discover • Create • Grow</footer>
-<script>document.querySelector('#year').textContent=new Date().getFullYear();</script>
-<script>
-(function(){
-  const ids=['home','products','payments','about','services','contact','privacy'];
-  function go(id,replace){
-    const el=document.getElementById(id); if(!el)return;
-    const header=document.querySelector('header');
-    const offset=(header?.getBoundingClientRect().height||80)+18;
-    const y=el.getBoundingClientRect().top+window.scrollY-offset;
-    window.scrollTo({top:Math.max(0,y),behavior:'smooth'});
-    if(replace) history.replaceState(null,'','#'+id); else history.pushState(null,'','#'+id);
-  }
-  document.querySelectorAll('a[href^="#"]').forEach(a=>{
-    const id=a.getAttribute('href').slice(1);
-    if(!ids.includes(id))return;
-    a.addEventListener('click',function(e){e.preventDefault();go(id,false);});
-  });
-  function restore(){const id=location.hash.slice(1);if(ids.includes(id))setTimeout(()=>go(id,true),50);}
-  window.addEventListener('hashchange',restore);
-  window.addEventListener('load',restore);
-  setTimeout(restore,500);
-  setTimeout(restore,1500);
-})();
-</script>
-<script type="module" src="js/store-v2.js"></script><script type="module" src="js/store-enhancements.js"></script><script type="module" src="js/service-notify-buttons.js"></script>
-</body>
-</html>
+<div class="topbar"><div class="topbar-inner"><span class="topbar-hook">✨ حلول رقمية جاهزة — ابدأ اليوم ووفّر وقتك</span><div class="topbar-links"><a class="whatsapp-link" href="https://wa.me/213770913494" target="_blank" rel="noopener">💬 واتساب</a><a href="mailto:digitalemdz@gmail.com">✉️ digitalemdz@gmail.com</a></div></div></div>
+<header class="glass"><a class="logo" href="index.html">DIGITAL <span>EMDZ</span></a><nav aria-label="التنقل الرئيسي"><a href="index.html" class="active">الرئيسية</a><a href="products.html">المنتجات</a><a href="payments.html">الدفع</a><a href="about.html">من نحن</a><a href="services.html">الخدمات</a><a href="contact.html">اتصل بنا</a></nav><div class="actions"><a class="btn ghost" href="products.html">🛍️ المتجر</a><a class="admin" href="admin-v2.html">⚙️ الإدارة</a></div></header>
+<main class="page-shell">
+<section class="home-hero"><div class="hero-copy-wrap"><span class="hero-badge">🔥 DIGITAL EMDZ • منتجات رقمية</span><p class="eyebrow">DISCOVER • CREATE • GROW</p><h1>اكتشف عالم<br><span>المنتجات الرقمية.</span></h1><p class="hero-copy">قوالب، مخططات، كتب إلكترونية وأدوات رقمية تساعدك على تنظيم عملك، توفير وقتك وتحويل أفكارك إلى إنجاز.</p><div class="hero-buttons"><a class="btn primary" href="products.html">🚀 تصفح المنتجات</a><a class="btn ghost" href="payments.html">💳 طرق الدفع</a><a class="btn ghost" href="services.html">🛎️ اطلب خدمة</a></div></div><div class="hero-visual glass"><div class="visual-glow"></div><div class="visual-center"><div class="visual-logo">DE</div><strong>DIGITAL EMDZ</strong><small>Discover • Create • Grow</small></div></div></section>
+<section><p class="eyebrow">EXPLORE</p><h2>كل شيء في مكانه</h2><div class="quick-grid"><a class="quick-card glass" href="products.html"><div class="quick-icon">🛍️</div><b>المنتجات</b><span>تصفح جميع المنتجات الرقمية والأسعار والتصنيفات.</span></a><a class="quick-card glass" href="payments.html"><div class="quick-icon">💳</div><b>طرق الدفع</b><span>شاهد وسائل الدفع المتاحة والتعليمات لكل وسيلة.</span></a><a class="quick-card glass" href="services.html"><div class="quick-icon">🛎️</div><b>الخدمات</b><span>اطلب تصميمًا أو تعديلًا أو خدمة رقمية مخصصة.</span></a><a class="quick-card glass wa-card" href="contact.html"><div class="quick-icon">💬</div><b>اتصل بنا</b><span>تواصل معنا عبر WhatsApp أو البريد الإلكتروني.</span></a></div></section>
+</main><footer>© <span id="year"></span> DIGITAL EMDZ — Discover • Create • Grow</footer><script>document.getElementById('year').textContent=new Date().getFullYear()</script></body></html>
