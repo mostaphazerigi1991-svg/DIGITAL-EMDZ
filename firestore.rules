@@ -1,0 +1,37 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isAdmin() {
+      return request.auth != null && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+
+    match /admins/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow write: if false;
+    }
+
+    match /products/{id} {
+      allow read: if resource.data.active == true || isAdmin();
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /paymentMethods/{id} {
+      allow read: if resource.data.enabled == true || isAdmin();
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /settings/{id} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /orders/{id} {
+      allow create: if request.resource.data.keys().hasOnly(['customerName','email','phone','paymentMethod','transactionId','proofUrl','items','total','status','createdAt'])
+                    && request.resource.data.email is string
+                    && request.resource.data.customerName is string
+                    && request.resource.data.paymentMethod is string
+                    && request.resource.data.status == 'pending';
+      allow read, update, delete: if isAdmin();
+    }
+  }
+}
