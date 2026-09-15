@@ -1,9 +1,9 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs, query, where, doc, getDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
+import { getFirestore, collection, addDoc, getDocs, query, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
 import { firebaseConfig } from "../firebase-config.js";
 
 const db = getFirestore(initializeApp(firebaseConfig));
-const esc=v=>String(v??"").replace(/[&<>'"]/g,c=>({"&":"&amp;","<":"&lt;","`>":"&gt;","'":"&#39;",'"':"&quot;"}[c]||c));
+const esc=v=>String(v??"").replace(/[&<>\'"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[c]||c));
 const money=v=>`$${Number(v||0).toFixed(2)}`;
 const form=document.querySelector("#checkoutForm"), itemsBox=document.querySelector("#orderItems"), totalBox=document.querySelector("#orderTotal"), paySelect=document.querySelector("#paymentMethod"), payDetails=document.querySelector("#paymentDetails"), msg=document.querySelector("#formMessage");
 let cart=[]; try{cart=JSON.parse(localStorage.getItem("demdz-cart")||"[]");if(!Array.isArray(cart))cart=[]}catch{cart=[]}
