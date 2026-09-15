@@ -3,11 +3,13 @@ const form=document.querySelector("#serviceForm");
 const select=form?.querySelector('select[name="service"]');
 const read=(key)=>{try{const value=JSON.parse(localStorage.getItem(key)||"[]");return Array.isArray(value)?value.filter(x=>typeof x==="string"&&x.trim()).map(x=>x.trim()):[]}catch{return[]}};
 const unique=(items)=>[...new Set(items.filter(Boolean).map(x=>String(x).trim()).filter(Boolean))];
-const setOptions=(names)=>{if(!select)return;select.innerHTML='<option value="">اختر نوع الخدمة</option>'+unique(names).map(name=>{const e=name.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\"/g,"&quot;");return `<option value="${e}">${e}</option>`}).join("");};
+const escapeHtml=(name)=>String(name).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\"/g,"&quot;");
+const setOptions=(names)=>{if(!select)return;select.innerHTML='<option value="">اختر نوع الخدمة</option>'+unique(names).map(name=>`<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`).join("");};
 
-// Always show the built-in services immediately, even if Firebase is unavailable.
-const localCustom=read(LOCAL),localBlocked=new Set(read(BLOCKED));
-setOptions(unique([...DEFAULTS,...localCustom]).filter(x=>!localBlocked.has(x)));
+// Show the built-in services immediately. Do NOT use an old local blocked list here;
+// an old browser cache must never make the public service list disappear.
+const localCustom=read(LOCAL);
+setOptions(unique([...DEFAULTS,...localCustom]));
 
 async function loadRemoteServices(){
   try{
@@ -19,17 +21,22 @@ async function loadRemoteServices(){
     const app=getApps().length?getApp():initializeApp(firebaseConfig),db=getFirestore(app);
     const snap=await getDoc(doc(db,"settings","store"));
     const data=snap.exists()?snap.data():{};
-    const custom=unique([...(Array.isArray(data.services)?data.services:[]),...read(LOCAL)]);
-    const blocked=new Set(unique([...(Array.isArray(data.blockedServices)?data.blockedServices:[]),...read(BLOCKED)]));
-    try{localStorage.setItem(LOCAL,JSON.stringify(custom.filter(x=>!DEFAULTS.includes(x))));localStorage.setItem(BLOCKED,JSON.stringify([...blocked]))}catch{}
+    const custom=unique([...(Array.isArray(data.services)?data.services:[]),...localCustom]);
+    // Firebase is authoritative when the settings document exists.
+    // Local blocked state is only a fallback for offline/permission failures.
+    const blocked=new Set(snap.exists()?unique(Array.isArray(data.blockedServices)?data.blockedServices:[]):read(BLOCKED));
+    try{
+      localStorage.setItem(LOCAL,JSON.stringify(custom.filter(x=>!DEFAULTS.includes(x))));
+      localStorage.setItem(BLOCKED,JSON.stringify([...blocked]));
+    }catch{}
     if(data.serviceRequestsEnabled===false){
       form.innerHTML='<div class="service-alert" style="text-align:center;padding:28px"><strong>🛑 استقبال طلبات الخدمات مغلق حاليًا</strong><br><span>يمكنك التواصل معنا مباشرة عبر WhatsApp أو Gmail.</span><div class="notify-actions"><a class="notify-btn notify-wa" href="https://wa.me/213770913494" target="_blank" rel="noopener">💬 WhatsApp</a><a class="notify-btn notify-mail" href="https://mail.google.com/mail/?view=cm&fs=1&to=digitalemdz%40gmail.com" target="_blank" rel="noopener">✉️ Gmail</a></div></div>';
       return;
     }
     setOptions(unique([...DEFAULTS,...custom]).filter(x=>!blocked.has(x)));
   }catch(error){
-    // Keep the local/default services usable when Firebase is unreachable.
     console.warn("DIGITAL EMDZ services sync unavailable:",error);
+    // The already-rendered defaults remain usable.
   }
 }
 loadRemoteServices();
