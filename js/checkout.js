@@ -11,11 +11,13 @@ const totalBox = document.querySelector("#orderTotal");
 const paySelect = document.querySelector("#paymentMethod");
 const payDetails = document.querySelector("#paymentDetails");
 const msg = document.querySelector("#formMessage");
+const proofInput = document.querySelector("#proofScreenshot");
+let selectedProofFile = null;
 
 let cart = [];
 try { cart = JSON.parse(localStorage.getItem("demdz-cart") || "[]"); if (!Array.isArray(cart)) cart = []; } catch { cart = []; }
 
-// وسائل الدفع الرسمية التي تظهر للزبون فقط: لا نقرأ paymentMethods من Firebase حتى لا تتكرر.
+// المصدر الوحيد لوسائل الدفع في صفحة الشراء: لا نقرأ paymentMethods من Firebase حتى لا تتكرر.
 const payments = [
   { id:"baridimob", name:"BaridiMob", account:"00799999004232834408", instructions:"ادفع عبر BaridiMob باستخدام الرقم أعلاه، ثم احتفظ بإثبات الدفع." },
   { id:"binance", name:"Binance", account:"766875587", instructions:"ادفع عبر Binance باستخدام الـID أعلاه، ثم احتفظ بإثبات الدفع." },
@@ -44,25 +46,31 @@ function renderPayments() {
   }).join("");
 }
 
+// النسخ يجب أن ينسخ الرقم/الحساب فقط، وليس اسم وسيلة الدفع.
 function paymentCopyText(p) {
-  return `وسيلة الدفع: ${p.name}\nبيانات الدفع: ${p.account}`;
+  return p.account;
 }
 
 paySelect?.addEventListener("change", () => {
   const p = payments.find(x => x.id === paySelect.value);
   if (!p) { payDetails.hidden = true; payDetails.innerHTML = ""; return; }
   payDetails.hidden = false;
-  payDetails.innerHTML = `<strong>💳 ${esc(p.name)}</strong><span class="payment-account">${esc(p.account)}</span><span class="payment-instructions">${esc(p.instructions)}</span><button type="button" id="copyPayment" class="btn primary" style="width:100%;margin-top:12px">📋 نسخ بيانات الدفع</button><small id="copyPaymentMsg" style="display:block;text-align:center;margin-top:8px;color:#86efac"></small>`;
+  payDetails.innerHTML = `<strong>💳 ${esc(p.name)}</strong><span class="payment-account">${esc(p.account)}</span><span class="payment-instructions">${esc(p.instructions)}</span><button type="button" id="copyPayment" class="btn primary" style="width:100%;margin-top:12px">📋 نسخ الرقم فقط</button><small id="copyPaymentMsg" style="display:block;text-align:center;margin-top:8px;color:#86efac"></small>`;
   document.querySelector("#copyPayment")?.addEventListener("click", async () => {
     const text = paymentCopyText(p);
     try {
       await navigator.clipboard.writeText(text);
       const cm = document.querySelector("#copyPaymentMsg");
-      if (cm) cm.textContent = "✅ تم نسخ بيانات الدفع. يمكنك الآن الدفع ثم إكمال الطلب.";
+      if (cm) cm.textContent = "✅ تم نسخ الرقم/الحساب فقط.";
     } catch {
-      window.prompt("انسخ بيانات الدفع:", text);
+      window.prompt("انسخ الرقم/الحساب فقط:", text);
     }
   });
+});
+
+proofInput?.addEventListener("change", () => {
+  selectedProofFile = proofInput.files?.[0] || null;
+  if (selectedProofFile && msg) msg.textContent = `📎 تم اختيار لقطة الشاشة: ${selectedProofFile.name}`;
 });
 
 form?.addEventListener("submit", async e => {
@@ -79,11 +87,11 @@ form?.addEventListener("submit", async e => {
 
   if (!firstName || !lastName) { msg.textContent = "⚠️ اكتب الاسم واللقب."; return; }
   if (!p) { msg.textContent = "⚠️ اختر وسيلة الدفع أولًا."; return; }
+  if (!selectedProofFile) { msg.textContent = "⚠️ أرفق لقطة شاشة لإثبات الدفع قبل إرسال الطلب."; proofInput?.focus(); return; }
 
   msg.textContent = "⏳ جارٍ تجهيز الطلب...";
   const orderItems = cart.map(x => ({ productId:String(x.id || ""), name:String(x.name || ""), price:Number(x.price || 0), quantity:Number(x.quantity || 1) }));
   const productSummary = orderItems.map(x => `${x.name} — ${money(x.price)} × ${x.quantity}`).join("\n");
-  const paymentSummary = paymentCopyText(p);
   const localOrderId = `DEMDZ-${Date.now()}`;
   let orderId = localOrderId;
   let saved = false;
@@ -97,9 +105,9 @@ form?.addEventListener("submit", async e => {
   }
 
   localStorage.removeItem("demdz-cart");
-  const message = `مرحبًا DIGITAL EMDZ 👋\nطلب جديد\nرقم الطلب: ${orderId}\nالاسم واللقب: ${name}\nالبريد: ${email}\nالهاتف: ${phone || "غير مذكور"}\n\nالمنتجات:\n${productSummary}\n\nالإجمالي: ${money(total)}\n${paymentSummary}\n\nقمت بالدفع وسأرسل لقطة شاشة لإثبات الدفع.`;
+  const message = `مرحبًا DIGITAL EMDZ 👋\nطلب جديد\nرقم الطلب: ${orderId}\nاسم المستخدم: ${name}\nالبريد: ${email}\nالهاتف: ${phone || "غير مذكور"}\n\nالمنتج والسعر:\n${productSummary}\n\nالإجمالي: ${money(total)}\nوسيلة الدفع: ${p.name}\nبيانات الدفع: ${p.account}\n\n📸 إثبات الدفع: لقطة الشاشة مرفقة/جاهزة للإرسال.`;
   const wa = `https://wa.me/213770913494?text=${encodeURIComponent(message)}`;
-  const gmail = `https://mail.google.com/mail/?view=cm&fs=1&to=digitalemdz%40gmail.com&su=${encodeURIComponent(`إثبات دفع — ${orderId}`)}&body=${encodeURIComponent(message)}`;
+  const gmail = `https://mail.google.com/mail/?view=cm&fs=1&to=digitalemdz%40gmail.com&su=${encodeURIComponent(`طلب جديد — ${orderId}`)}&body=${encodeURIComponent(message)}`;
 
   document.querySelector("#checkoutContent").style.display = "none";
   const success = document.querySelector("#success");
@@ -107,18 +115,35 @@ form?.addEventListener("submit", async e => {
   document.querySelector("#successText").innerHTML = `
     <div style="font-size:18px;line-height:2">
       <strong>رقم الطلب:</strong> ${esc(orderId)}<br>
-      <strong>الاسم واللقب:</strong> ${esc(name)}<br>
+      <strong>اسم المستخدم:</strong> ${esc(name)}<br>
       <strong>المنتج والسعر:</strong><br>${esc(productSummary).replace(/\n/g,"<br>")}<br>
       <strong>الإجمالي:</strong> ${money(total)}<br>
       <strong>وسيلة الدفع:</strong> ${esc(p.name)}<br>
       <strong>بيانات الدفع:</strong> ${esc(p.account)}
     </div>
-    <div class="notice" style="margin-top:18px">📸 بعد الدفع، اضغط واتساب أو البريد وأرسل بيانات الطلب مع لقطة شاشة لإثبات الدفع.</div>
+    <div class="notice" style="margin-top:18px">📸 لقطة الشاشة مطلوبة لإثبات الدفع. أرسلها مع الطلب عبر واتساب أو البريد.</div>
     <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:18px">
-      <a class="btn primary" target="_blank" rel="noopener" href="${wa}">💬 إرسال الطلب عبر واتساب</a>
-      <a class="btn primary" target="_blank" rel="noopener" href="${gmail}">✉️ إرسال الطلب عبر البريد</a>
+      <a class="btn primary" target="_blank" rel="noopener" href="${wa}">💬 إرسال بيانات الطلب إلى واتساب</a>
+      <a class="btn primary" target="_blank" rel="noopener" href="${gmail}">✉️ إرسال بيانات الطلب إلى البريد</a>
+      <button id="shareProof" class="btn primary" type="button">📎 إرسال لقطة الشاشة</button>
     </div>
-    <br><small>${saved ? "✅ تم حفظ الطلب في لوحة الإدارة." : "⚠️ لم يتم حفظ الطلب في الإدارة، لكن رسالة واتساب والبريد جاهزتان."}</small>`;
+    <p id="proofShareMsg" class="mini"></p>
+    <br><small>${saved ? "✅ تم حفظ الطلب في لوحة الإدارة." : "⚠️ لم يتم حفظ الطلب في الإدارة، لكن بيانات الطلب جاهزة للإرسال."}</small>`;
+
+  document.querySelector("#shareProof")?.addEventListener("click", async () => {
+    const shareMsg = document.querySelector("#proofShareMsg");
+    try {
+      if (navigator.share && (!navigator.canShare || navigator.canShare({ files:[selectedProofFile] }))) {
+        await navigator.share({ title:`إثبات دفع ${orderId}`, text:message, files:[selectedProofFile] });
+        if (shareMsg) shareMsg.textContent = "✅ تم فتح مشاركة الملف. اختر واتساب أو البريد لإرسال لقطة الشاشة.";
+      } else {
+        if (shareMsg) shareMsg.textContent = "⚠️ جهازك لا يدعم إرسال الملف مباشرة من الصفحة. افتح واتساب أو البريد وأرفق لقطة الشاشة يدويًا.";
+      }
+    } catch (err) {
+      if (shareMsg) shareMsg.textContent = "ℹ️ لم يتم إرسال الملف بعد. افتح واتساب أو البريد وأرفق لقطة الشاشة.";
+    }
+  });
+
   window.scrollTo({ top:0, behavior:"smooth" });
 });
 
