@@ -9,10 +9,10 @@ const form=document.querySelector("#checkoutForm"),itemsBox=document.querySelect
 let cart=[];try{cart=JSON.parse(localStorage.getItem("demdz-cart")||"[]");if(!Array.isArray(cart))cart=[]}catch{cart=[]}
 let payments=[];
 const defaultPayments=[
-{id:"default-baridimob",name:"BaridiMob",account:"أضف رقم/حساب BaridiMob من لوحة الإدارة",instructions:"ادفع عبر BaridiMob ثم أكمل إرسال الطلب."},
+{id:"default-baridimob",name:"BaridiMob",account:"رقم BaridiMob: يُضاف من لوحة الإدارة",instructions:"ادفع عبر BaridiMob ثم أكمل إرسال الطلب."},
 {id:"default-binance",name:"Binance",account:"766875587",instructions:"ادفع عبر Binance ثم أكمل إرسال الطلب."},
 {id:"default-redotpay",name:"RedotPay",account:"1576815123",instructions:"ادفع عبر RedotPay ثم أكمل إرسال الطلب."},
-{id:"default-bank",name:"تحويل بنكي",account:"00799999004232834408",instructions:"قم بالتحويل البنكي ثم أكمل إرسال الطلب."},
+{id:"default-bank",name:"تحويل بنكي",account:"00799999004232834408",instructions:"RIB: 00799999004232834408 — قم بالتحويل البنكي ثم أكمل إرسال الطلب."},
 {id:"default-paypal",name:"PayPal",account:"الدفع عبر PayPal",instructions:"أكمل الدفع عبر PayPal ثم أكمل إرسال الطلب."}
 ];
 function renderOrder(){if(!cart.length){document.querySelector("#checkoutContent").innerHTML='<section class="checkout-card empty"><h2>السلة فارغة 🛒</h2><p>أضف منتجًا أولًا ثم ارجع لإتمام الطلب.</p><a class="btn primary" href="products.html">تصفح المنتجات</a></section>';return}itemsBox.innerHTML=cart.map(p=>`<div class="order-line"><span>${esc(p.name)}</span><strong>${money(p.price)}</strong></div>`).join("");totalBox.innerHTML=`<span>الإجمالي</span><strong>${money(cart.reduce((s,p)=>s+Number(p.price||0),0))}</strong>`}
