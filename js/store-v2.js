@@ -23,6 +23,13 @@ function esc(v) {
 function money(v) { return `$${Number(v || 0).toFixed(2)}`; }
 function updateStatus(text) { if (statusBox) statusBox.innerHTML = text; }
 function updateCart() { const el = document.querySelector("#cartCount"); if (el) el.textContent = cart.length; }
+function saveCart() { localStorage.setItem("demdz-cart", JSON.stringify(cart)); updateCart(); }
+function goCheckout(items) {
+  if (!items?.length) return;
+  cart = items;
+  saveCart();
+  location.href = "checkout.html";
+}
 
 function render(filter = "") {
   if (!grid) return;
@@ -39,7 +46,7 @@ function render(filter = "") {
       : `<div class="image-placeholder"><span>✦</span><small>DIGITAL EMDZ</small></div>`;
     const el = document.createElement("article");
     el.className = "card";
-    el.innerHTML = `<div class="card-img">${visual}${discount ? `<span class="badge">-${discount}%</span>` : ""}</div><div class="card-body"><small class="category">${esc(p.category || "Digital")}</small><h3>${esc(p.name)}</h3><p>${esc(p.description || "")}</p><div class="price-row"><span class="price">${money(p.price)}</span>${p.oldPrice ? `<span class="old">${money(p.oldPrice)}</span>` : ""}</div><div class="card-actions"><button class="btn primary" data-buy="${p.id}">شراء الآن</button><button class="btn ghost" data-cart="${p.id}">أضف للسلة</button></div></div>`;
+    el.innerHTML = `<div class="card-img">${visual}${discount ? `<span class="badge">-${discount}%</span>` : ""}</div><div class="card-body"><small class="category">${esc(p.category || "Digital")}</small><h3>${esc(p.name)}</h3><p>${esc(p.description || "")}</p><div class="price-row"><span class="price">${money(p.price)}</span>${p.oldPrice ? `<span class="old">${money(p.oldPrice)}</span>` : ""}</div><div class="card-actions"><button class="btn primary" data-buy="${esc(p.id)}">شراء الآن</button><button class="btn ghost" data-cart="${esc(p.id)}">أضف للسلة</button></div></div>`;
     grid.appendChild(el);
   });
 }
@@ -62,13 +69,18 @@ function buildCategories() {
 }
 
 if (grid) grid.addEventListener("click", e => {
-  const b = e.target.closest("[data-cart],[data-buy]");
+  const buy = e.target.closest("[data-buy]");
+  const add = e.target.closest("[data-cart]");
+  const b = buy || add;
   if (!b) return;
-  const p = products.find(x => x.id === b.dataset.cart || x.id === b.dataset.buy);
+  const p = products.find(x => x.id === b.dataset.buy || x.id === b.dataset.cart);
   if (!p) return;
+  if (buy) {
+    goCheckout([p]);
+    return;
+  }
   cart.push(p);
-  localStorage.setItem("demdz-cart", JSON.stringify(cart));
-  updateCart();
+  saveCart();
   document.querySelector("#cartPanel")?.classList.add("open");
   renderCart();
 });
@@ -77,17 +89,22 @@ function renderCart() {
   const box = document.querySelector("#cartItems");
   if (!box) return;
   const total = cart.reduce((s, p) => s + Number(p.price || 0), 0);
-  box.innerHTML = cart.length ? cart.map((p, i) => `<div class="cart-item"><span>${esc(p.name)}</span><strong>${money(p.price)}</strong><button data-remove="${i}">×</button></div>`).join("") + `<div class="cart-total">الإجمالي <strong>${money(total)}</strong></div>` : '<p class="muted">السلة فارغة.</p>';
+  box.innerHTML = cart.length
+    ? cart.map((p, i) => `<div class="cart-item"><span>${esc(p.name)}</span><strong>${money(p.price)}</strong><button data-remove="${i}" aria-label="حذف">×</button></div>`).join("")
+      + `<div class="cart-total">الإجمالي <strong>${money(total)}</strong></div><button id="checkoutCart" class="btn primary" style="width:100%;margin-top:16px">إتمام الطلب والدفع ←</button>`
+    : '<p class="muted">السلة فارغة.</p>';
 }
 
 const cartItems = document.querySelector("#cartItems");
 if (cartItems) cartItems.addEventListener("click", e => {
   const b = e.target.closest("[data-remove]");
-  if (!b) return;
-  cart.splice(Number(b.dataset.remove), 1);
-  localStorage.setItem("demdz-cart", JSON.stringify(cart));
-  updateCart();
-  renderCart();
+  if (b) {
+    cart.splice(Number(b.dataset.remove), 1);
+    saveCart();
+    renderCart();
+    return;
+  }
+  if (e.target.closest("#checkoutCart")) goCheckout(cart);
 });
 document.querySelector("#cartBtn")?.addEventListener("click", () => { document.querySelector("#cartPanel")?.classList.toggle("open"); renderCart(); });
 document.querySelector("#closeCart")?.addEventListener("click", () => document.querySelector("#cartPanel")?.classList.remove("open"));
@@ -114,7 +131,6 @@ function setContacts(d) {
 function scrollToHash() { const hash = location.hash; if (!hash) return; const target = document.querySelector(hash); if (!target) return; requestAnimationFrame(() => requestAnimationFrame(() => target.scrollIntoView({ behavior: "smooth", block: "start" }))); }
 
 async function load() {
-  // Show products immediately. Firestore is used to replace the demo products when real active products are available.
   buildCategories();
   render();
   updateStatus(`🛍️ <strong>${products.length} منتجات جاهزة للعرض</strong>`);
