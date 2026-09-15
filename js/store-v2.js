@@ -1,56 +1,13 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
 import { getFirestore, collection, getDocs, query, where, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
 import { firebaseConfig } from "../firebase-config.js";
-
-const db = getFirestore(initializeApp(firebaseConfig));
-const grid = document.querySelector("#productGrid");
-const cats = document.querySelector("#categories");
-const paymentsBox = document.querySelector("#paymentMethods");
-const statusBox = document.querySelector("#productsStatus");
-const WHATSAPP = "213770913494";
-const fallback = [
-  { id: "demo-1", name: "Premium Planner", description: "قالب رقمي منظم لإدارة المهام والأهداف.", price: 19.99, oldPrice: 29.99, category: "Planners" },
-  { id: "demo-2", name: "Digital Business Bundle", description: "مجموعة قوالب رقمية جاهزة للمشاريع.", price: 24.99, oldPrice: 39.99, category: "Bundles" },
-  { id: "demo-3", name: "Ebook — Smart Workflow", description: "دليل عملي لتحسين الإنتاجية والعمل الرقمي.", price: 14.99, oldPrice: 19.99, category: "Ebooks" }
-];
-let products = [...fallback];
-function esc(v) { return String(v ?? "").replace(/[&<>'"]/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", "'":"&#39;", '"':"&quot;" }[c])); }
-function money(v) { return `$${Number(v || 0).toFixed(2)}`; }
-function updateStatus(text) { if (statusBox) statusBox.innerHTML = text; }
-function whatsappBuy(p) {
-  const name = prompt("اكتب اسمك فقط:");
-  if (!name || !name.trim()) return;
-  const text = `مرحبًا DIGITAL EMDZ 👋\nلدي طلب شراء جديد:\n\nاسم العميل: ${name.trim()}\nاسم المنتج: ${p.name}\nالسعر: ${money(p.price)}\n\nأرجو التواصل معي لإتمام الطلب وإرسال وسيلة الدفع المناسبة. 🙏`;
-  window.open(`https://wa.me/${WHATSAPP}?text=${encodeURIComponent(text)}`, "_blank", "noopener");
-}
-function render(filter = "") {
-  if (!grid) return;
-  grid.innerHTML = "";
-  const list = products.filter(p => !filter || p.category === filter);
-  if (!list.length) { grid.innerHTML = '<div class="product-empty"><strong>لا توجد منتجات في هذا القسم حاليًا.</strong><span>جرّب تصنيفًا آخر.</span></div>'; return; }
-  list.forEach(p => {
-    const discount = p.oldPrice && Number(p.oldPrice) > Number(p.price) ? Math.round((1 - Number(p.price) / Number(p.oldPrice)) * 100) : 0;
-    const visual = p.imageUrl ? `<img class="product-image" src="${esc(p.imageUrl)}" alt="${esc(p.name)}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="image-placeholder fallback-image"><span>✦</span><small>DIGITAL EMDZ</small></div>` : `<div class="image-placeholder"><span>✦</span><small>DIGITAL EMDZ</small></div>`;
-    const el = document.createElement("article");
-    el.className = "card";
-    el.innerHTML = `<div class="card-img">${visual}${discount ? `<span class="badge">-${discount}%</span>` : ""}</div><div class="card-body"><small class="category">${esc(p.category || "Digital")}</small><h3>${esc(p.name)}</h3><p>${esc(p.description || "")}</p><div class="price-row"><span class="price">${money(p.price)}</span>${p.oldPrice ? `<span class="old">${money(p.oldPrice)}</span>` : ""}</div><div class="card-actions"><button class="btn primary" data-buy="${esc(p.id)}">💬 شراء عبر واتساب</button></div><small style="display:block;margin-top:10px;color:#94a3b8">تواصل معنا وسنرسل لك وسيلة الدفع المناسبة.</small></div>`;
-    grid.appendChild(el);
-  });
-}
-function buildCategories() {
-  if (!cats) return;
-  cats.innerHTML = "";
-  const all = document.createElement("button"); all.className = "chip active"; all.textContent = "الكل";
-  all.onclick = () => { document.querySelectorAll(".chip").forEach(x => x.classList.remove("active")); all.classList.add("active"); render(); }; cats.appendChild(all);
-  [...new Set(products.map(p => p.category).filter(Boolean))].forEach(c => { const b = document.createElement("button"); b.className="chip"; b.textContent=c; b.onclick=()=>{document.querySelectorAll(".chip").forEach(x=>x.classList.remove("active"));b.classList.add("active");render(c)}; cats.appendChild(b); });
-}
-if (grid) grid.addEventListener("click", e => { const b=e.target.closest("[data-buy]"); if(!b)return; const p=products.find(x=>x.id===b.dataset.buy); if(p)whatsappBuy(p); });
-function paymentIcon(name) { const n=String(name||"").toLowerCase(); if(n.includes("binance"))return["₿","pay-binance"]; if(n.includes("redot"))return["R","pay-redot"]; if(n.includes("baridi"))return["BD","pay-baridi"]; if(n.includes("paypal"))return["P","pay-paypal"]; if(n.includes("cib"))return["CIB","pay-cib"]; if(n.includes("ccp"))return["CCP","pay-ccp"]; return[String(name||"P").slice(0,3).toUpperCase(),""]; }
-function setContacts(d) { const wa=d.whatsapp||"+213770913494",email=d.email||"digitalemdz@gmail.com",digits=String(wa).replace(/\D/g,""); [document.querySelector("#topWhatsApp"),document.querySelector("#whatsappFloat"),document.querySelector("#contactWhatsApp")].forEach(a=>{if(a){a.href=`https://wa.me/${digits}`;a.target="_blank";a.rel="noopener";}}); const te=document.querySelector("#topEmail");if(te){te.textContent=`✉️ ${email}`;te.href=`mailto:${email}`;} const ev=document.querySelector("#contactEmail .contact-value");if(ev)ev.textContent=email;const el=document.querySelector("#contactEmail");if(el)el.href=`mailto:${email}`; }
-async function load(){
-  buildCategories(); render(); updateStatus(`🛍️ <strong>${products.length} منتجات جاهزة للعرض</strong>`);
-  try{const snap=await getDocs(query(collection(db,"products"),where("active","==",true)));const real=snap.docs.map(d=>({id:d.id,...d.data()}));if(real.length){products=real;buildCategories();render();updateStatus(`✅ <strong>${products.length} منتج مفعّل ظاهر الآن</strong>`);}else updateStatus(`🛍️ <strong>${products.length} منتجات جاهزة للعرض</strong>`);}catch(e){console.error(e);}
-  try{const s=await getDoc(doc(db,"settings","store"));if(s.exists()){const d=s.data();setContacts(d);}}catch(e){console.error(e);}
-  try{if(paymentsBox){const snap=await getDocs(query(collection(db,"paymentMethods"),where("enabled","==",true)));paymentsBox.innerHTML="";snap.forEach(d=>{const p=d.data(),[icon,cls]=paymentIcon(p.name),el=document.createElement("div");el.className="payment-public";el.innerHTML=`${p.iconData?`<img class="payment-thumb" src="${esc(p.iconData)}" alt="${esc(p.name)}">`:`<div class="pay-icon ${cls}">${esc(icon)}</div>`}<div><strong>${esc(p.name)}</strong></div>`;paymentsBox.appendChild(el);});if(!paymentsBox.children.length)paymentsBox.innerHTML='<p class="muted">لا توجد وسائل دفع مفعلة حاليًا.</p>';}}catch(e){console.error(e);}
-}
-load();
+const db=getFirestore(initializeApp(firebaseConfig));const grid=document.querySelector("#productGrid"),cats=document.querySelector("#categories"),paymentsBox=document.querySelector("#paymentMethods"),statusBox=document.querySelector("#productsStatus"),WHATSAPP="213770913494";
+const fallback=[{id:"demo-1",name:"Premium Planner",description:"قالب رقمي منظم لإدارة المهام والأهداف.",price:19.99,oldPrice:29.99,category:"Planners"},{id:"demo-2",name:"Digital Business Bundle",description:"مجموعة قوالب رقمية جاهزة للمشاريع.",price:24.99,oldPrice:39.99,category:"Bundles"},{id:"demo-3",name:"Ebook — Smart Workflow",description:"دليل عملي لتحسين الإنتاجية والعمل الرقمي.",price:14.99,oldPrice:19.99,category:"Ebooks"}];let products=[...fallback];
+const esc=v=>String(v??"").replace(/[&<>'"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[c]));const money=v=>`$${Number(v||0).toFixed(2)}`;const updateStatus=t=>{if(statusBox)statusBox.innerHTML=t};
+function whatsappBuy(p){const name=prompt("اكتب اسمك فقط:");if(!name?.trim())return;const text=`مرحبًا DIGITAL EMDZ 👋\nلدي طلب شراء جديد:\n\nاسم العميل: ${name.trim()}\nاسم المنتج: ${p.name}\nالسعر: ${money(p.price)}\n\nأرجو التواصل معي لإتمام الطلب وإرسال وسيلة الدفع المناسبة. 🙏`;window.open(`https://wa.me/${WHATSAPP}?text=${encodeURIComponent(text)}`,"_blank","noopener")}
+function render(filter=""){if(!grid)return;grid.innerHTML="";const list=products.filter(p=>!filter||p.category===filter);if(!list.length){grid.innerHTML='<div class="product-empty"><strong>لا توجد منتجات في هذا القسم حاليًا.</strong><span>جرّب تصنيفًا آخر.</span></div>';return}list.forEach(p=>{const discount=p.oldPrice&&Number(p.oldPrice)>Number(p.price)?Math.round((1-Number(p.price)/Number(p.oldPrice))*100):0,visual=p.imageUrl?`<img class="product-image" src="${esc(p.imageUrl)}" alt="${esc(p.name)}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="image-placeholder fallback-image"><span>✦</span><small>DIGITAL EMDZ</small></div>`:`<div class="image-placeholder"><span>✦</span><small>DIGITAL EMDZ</small></div>`,el=document.createElement("article");el.className="card";el.innerHTML=`<div class="card-img">${visual}${discount?`<span class="badge">-${discount}%</span>`:""}</div><div class="card-body"><small class="category">${esc(p.category||"Digital")}</small><h3>${esc(p.name)}</h3><p>${esc(p.description||"")}</p><div class="price-row"><span class="price">${money(p.price)}</span>${p.oldPrice?`<span class="old">${money(p.oldPrice)}</span>`:""}</div><div class="card-actions"><button class="btn primary" data-buy="${esc(p.id)}">💬 شراء عبر واتساب</button></div><small style="display:block;margin-top:10px;color:#94a3b8">تواصل معنا وسنرسل لك وسيلة الدفع المناسبة.</small></div>`;grid.appendChild(el)})}
+function buildCategories(){if(!cats)return;cats.innerHTML="";const all=document.createElement("button");all.className="chip active";all.textContent="الكل";all.onclick=()=>{document.querySelectorAll(".chip").forEach(x=>x.classList.remove("active"));all.classList.add("active");render()};cats.appendChild(all);[...new Set(products.map(p=>p.category).filter(Boolean))].forEach(c=>{const b=document.createElement("button");b.className="chip";b.textContent=c;b.onclick=()=>{document.querySelectorAll(".chip").forEach(x=>x.classList.remove("active"));b.classList.add("active");render(c)};cats.appendChild(b)})}
+if(grid)grid.addEventListener("click",e=>{const b=e.target.closest("[data-buy]");if(!b)return;const p=products.find(x=>x.id===b.dataset.buy);if(p)whatsappBuy(p)});
+function paymentIcon(name){const n=String(name||"").toLowerCase();if(n.includes("binance"))return["₿","pay-binance"];if(n.includes("redot"))return["R","pay-redot"];if(n.includes("baridi"))return["BD","pay-baridi"];if(n.includes("paypal"))return["P","pay-paypal"];if(n.includes("cib"))return["CIB","pay-cib"];if(n.includes("ccp"))return["CCP","pay-ccp"];return[String(name||"P").slice(0,3).toUpperCase(),""]}
+function setContacts(d){const wa=d.whatsapp||"+213770913494",email=d.email||"digitalemdz@gmail.com",digits=String(wa).replace(/\D/g,"");[document.querySelector("#topWhatsApp"),document.querySelector("#whatsappFloat"),document.querySelector("#contactWhatsApp")].forEach(a=>{if(a){a.href=`https://wa.me/${digits}`;a.target="_blank";a.rel="noopener"}});const te=document.querySelector("#topEmail");if(te){te.textContent=`✉️ ${email}`;te.href=`mailto:${email}`}const ev=document.querySelector("#contactEmail .contact-value");if(ev)ev.textContent=email;const el=document.querySelector("#contactEmail");if(el)el.href=`mailto:${email}`}
+async function load(){buildCategories();render();updateStatus(`🛍️ <strong>${products.length} منتجات جاهزة للعرض</strong>`);try{const snap=await getDocs(query(collection(db,"products"),where("active","==",true))),real=snap.docs.map(d=>({id:d.id,...d.data()}));if(real.length){products=real;buildCategories();render();updateStatus(`✅ <strong>${products.length} منتج مفعّل ظاهر الآن</strong>`)}}catch(e){console.error(e)}try{const s=await getDoc(doc(db,"settings","store"));if(s.exists())setContacts(s.data())}catch(e){console.error(e)}try{if(paymentsBox){const snap=await getDocs(query(collection(db,"paymentMethods"),where("enabled","==",true)));paymentsBox.innerHTML="";snap.forEach(d=>{const p=d.data(),[icon,cls]=paymentIcon(p.name),el=document.createElement("div");el.className="payment-public";el.innerHTML=`${p.iconData?`<img class="payment-thumb" src="${esc(p.iconData)}" alt="${esc(p.name)}">`:`<div class="pay-icon ${cls}">${esc(icon)}</div>`}<div><strong>${esc(p.name)}</strong></div>`;paymentsBox.appendChild(el)});if(!paymentsBox.children.length)paymentsBox.innerHTML='<p class="muted">لا توجد وسائل دفع مفعلة حاليًا.</p>'}}catch(e){console.error(e)}}load();
