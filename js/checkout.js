@@ -17,12 +17,12 @@ let selectedProofFile = null;
 let cart = [];
 try { cart = JSON.parse(localStorage.getItem("demdz-cart") || "[]"); if (!Array.isArray(cart)) cart = []; } catch { cart = []; }
 
-// المصدر الوحيد لوسائل الدفع في صفحة الشراء: لا نقرأ paymentMethods من Firebase حتى لا تتكرر.
+// وسائل الدفع الرسمية الظاهرة في صفحة الشراء فقط، لمنع التكرار.
 const payments = [
-  { id:"baridimob", name:"BaridiMob", account:"00799999004232834408", instructions:"ادفع عبر BaridiMob باستخدام الرقم أعلاه، ثم احتفظ بإثبات الدفع." },
+  { id:"baridimob", name:"BaridiMob", account:"00799999004232834408", instructions:"ادفع عبر BaridiMob باستخدام الـRIB أعلاه، ثم احتفظ بإثبات الدفع." },
   { id:"binance", name:"Binance", account:"766875587", instructions:"ادفع عبر Binance باستخدام الـID أعلاه، ثم احتفظ بإثبات الدفع." },
   { id:"redotpay", name:"RedotPay", account:"1576815123", instructions:"ادفع عبر RedotPay باستخدام الـID أعلاه، ثم احتفظ بإثبات الدفع." },
-  { id:"paypal", name:"PayPal", account:"الدفع عبر PayPal", instructions:"أكمل الدفع عبر PayPal، ثم احتفظ بإثبات الدفع." }
+  { id:"paypal", name:"PayPal", account:"sinanamin737@gmail.com", instructions:"ادفع إلى حساب PayPal: sinanamin737@gmail.com ثم احتفظ بإثبات الدفع." }
 ];
 
 function renderOrder() {
@@ -42,29 +42,25 @@ function renderPayments() {
     if (p.id === "baridimob") label += " — RIB: 00799999004232834408";
     if (p.id === "binance") label += " — ID: 766875587";
     if (p.id === "redotpay") label += " — ID: 1576815123";
+    if (p.id === "paypal") label += " — sinanamin737@gmail.com";
     return `<option value="${p.id}">${label}</option>`;
   }).join("");
 }
 
-// النسخ يجب أن ينسخ الرقم/الحساب فقط، وليس اسم وسيلة الدفع.
-function paymentCopyText(p) {
-  return p.account;
-}
+function paymentCopyText(p) { return p.account; }
 
 paySelect?.addEventListener("change", () => {
   const p = payments.find(x => x.id === paySelect.value);
   if (!p) { payDetails.hidden = true; payDetails.innerHTML = ""; return; }
   payDetails.hidden = false;
-  payDetails.innerHTML = `<strong>💳 ${esc(p.name)}</strong><span class="payment-account">${esc(p.account)}</span><span class="payment-instructions">${esc(p.instructions)}</span><button type="button" id="copyPayment" class="btn primary" style="width:100%;margin-top:12px">📋 نسخ الرقم فقط</button><small id="copyPaymentMsg" style="display:block;text-align:center;margin-top:8px;color:#86efac"></small>`;
+  payDetails.innerHTML = `<strong>💳 ${esc(p.name)}</strong><span class="payment-account">${esc(p.account)}</span><span class="payment-instructions">${esc(p.instructions)}</span><button type="button" id="copyPayment" class="btn primary" style="width:100%;margin-top:12px">📋 نسخ بيانات الدفع فقط</button><small id="copyPaymentMsg" style="display:block;text-align:center;margin-top:8px;color:#86efac"></small>`;
   document.querySelector("#copyPayment")?.addEventListener("click", async () => {
     const text = paymentCopyText(p);
     try {
       await navigator.clipboard.writeText(text);
       const cm = document.querySelector("#copyPaymentMsg");
-      if (cm) cm.textContent = "✅ تم نسخ الرقم/الحساب فقط.";
-    } catch {
-      window.prompt("انسخ الرقم/الحساب فقط:", text);
-    }
+      if (cm) cm.textContent = "✅ تم نسخ رقم/حساب الدفع فقط.";
+    } catch { window.prompt("انسخ رقم/حساب الدفع فقط:", text); }
   });
 });
 
@@ -88,6 +84,7 @@ form?.addEventListener("submit", async e => {
   if (!firstName || !lastName) { msg.textContent = "⚠️ اكتب الاسم واللقب."; return; }
   if (!p) { msg.textContent = "⚠️ اختر وسيلة الدفع أولًا."; return; }
   if (!selectedProofFile) { msg.textContent = "⚠️ أرفق لقطة شاشة لإثبات الدفع قبل إرسال الطلب."; proofInput?.focus(); return; }
+  if (!selectedProofFile.type.startsWith("image/") || selectedProofFile.size > 5 * 1024 * 1024) { msg.textContent = "⚠️ اختر صورة فقط بحجم لا يتجاوز 5MB."; proofInput?.focus(); return; }
 
   msg.textContent = "⏳ جارٍ تجهيز الطلب...";
   const orderItems = cart.map(x => ({ productId:String(x.id || ""), name:String(x.name || ""), price:Number(x.price || 0), quantity:Number(x.quantity || 1) }));
@@ -100,12 +97,10 @@ form?.addEventListener("submit", async e => {
     const ref = await addDoc(collection(db,"orders"), { customerName:name, email, phone, paymentMethod:p.name, transactionId:"", proofUrl:"", items:orderItems, total, status:"pending", createdAt:serverTimestamp() });
     orderId = ref.id;
     saved = true;
-  } catch (err) {
-    console.warn("Order save failed; continuing with contact buttons", err);
-  }
+  } catch (err) { console.warn("Order save failed; continuing with contact buttons", err); }
 
   localStorage.removeItem("demdz-cart");
-  const message = `مرحبًا DIGITAL EMDZ 👋\nطلب جديد\nرقم الطلب: ${orderId}\nاسم المستخدم: ${name}\nالبريد: ${email}\nالهاتف: ${phone || "غير مذكور"}\n\nالمنتج والسعر:\n${productSummary}\n\nالإجمالي: ${money(total)}\nوسيلة الدفع: ${p.name}\nبيانات الدفع: ${p.account}\n\n📸 إثبات الدفع: لقطة الشاشة مرفقة/جاهزة للإرسال.`;
+  const message = `مرحبًا DIGITAL EMDZ 👋\nطلب جديد\nرقم الطلب: ${orderId}\nاسم المستخدم: ${name}\nالبريد: ${email}\nالهاتف: ${phone || "غير مذكور"}\n\nالمنتج والسعر:\n${productSummary}\n\nالإجمالي: ${money(total)}\nوسيلة الدفع: ${p.name}\nبيانات الدفع: ${p.account}`;
   const wa = `https://wa.me/213770913494?text=${encodeURIComponent(message)}`;
   const gmail = `https://mail.google.com/mail/?view=cm&fs=1&to=digitalemdz%40gmail.com&su=${encodeURIComponent(`طلب جديد — ${orderId}`)}&body=${encodeURIComponent(message)}`;
 
@@ -121,26 +116,26 @@ form?.addEventListener("submit", async e => {
       <strong>وسيلة الدفع:</strong> ${esc(p.name)}<br>
       <strong>بيانات الدفع:</strong> ${esc(p.account)}
     </div>
-    <div class="notice" style="margin-top:18px">📸 لقطة الشاشة مطلوبة لإثبات الدفع. أرسلها مع الطلب عبر واتساب أو البريد.</div>
+    <div class="notice" style="margin-top:18px">📸 لقطة الشاشة جاهزة. اضغط «مشاركة إثبات الدفع» ثم اختر واتساب لإرسال الصورة مع بيانات الطلب.</div>
     <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:18px">
-      <a class="btn primary" target="_blank" rel="noopener" href="${wa}">💬 إرسال بيانات الطلب إلى واتساب</a>
-      <a class="btn primary" target="_blank" rel="noopener" href="${gmail}">✉️ إرسال بيانات الطلب إلى البريد</a>
-      <button id="shareProof" class="btn primary" type="button">📎 إرسال لقطة الشاشة</button>
+      <button id="shareProof" class="btn primary" type="button">📸 مشاركة إثبات الدفع عبر واتساب</button>
+      <a class="btn primary" target="_blank" rel="noopener" href="${wa}">💬 فتح واتساب بالطلب</a>
+      <a class="btn primary" target="_blank" rel="noopener" href="${gmail}">✉️ فتح البريد بالطلب</a>
     </div>
     <p id="proofShareMsg" class="mini"></p>
-    <br><small>${saved ? "✅ تم حفظ الطلب في لوحة الإدارة." : "⚠️ لم يتم حفظ الطلب في الإدارة، لكن بيانات الطلب جاهزة للإرسال."}</small>`;
+    <small>${saved ? "✅ تم حفظ الطلب في لوحة الإدارة." : "⚠️ تعذر حفظ الطلب في الإدارة، لكن بيانات الطلب جاهزة للإرسال."}</small>`;
 
   document.querySelector("#shareProof")?.addEventListener("click", async () => {
     const shareMsg = document.querySelector("#proofShareMsg");
     try {
-      if (navigator.share && (!navigator.canShare || navigator.canShare({ files:[selectedProofFile] }))) {
+      if (navigator.share && navigator.canShare && navigator.canShare({ files:[selectedProofFile] })) {
         await navigator.share({ title:`إثبات دفع ${orderId}`, text:message, files:[selectedProofFile] });
-        if (shareMsg) shareMsg.textContent = "✅ تم فتح مشاركة الملف. اختر واتساب أو البريد لإرسال لقطة الشاشة.";
+        if (shareMsg) shareMsg.textContent = "✅ اختر WhatsApp من نافذة المشاركة لإرسال الصورة مع الطلب.";
       } else {
-        if (shareMsg) shareMsg.textContent = "⚠️ جهازك لا يدعم إرسال الملف مباشرة من الصفحة. افتح واتساب أو البريد وأرفق لقطة الشاشة يدويًا.";
+        if (shareMsg) shareMsg.innerHTML = "⚠️ هذا المتصفح لا يسمح للموقع بإرفاق الصورة تلقائيًا داخل رابط WhatsApp. اضغط «فتح واتساب بالطلب» ثم أرفق نفس اللقطة من زر 📎 في WhatsApp.";
       }
     } catch (err) {
-      if (shareMsg) shareMsg.textContent = "ℹ️ لم يتم إرسال الملف بعد. افتح واتساب أو البريد وأرفق لقطة الشاشة.";
+      if (shareMsg) shareMsg.textContent = "ℹ️ لم يتم إرسال الصورة. اختر WhatsApp من نافذة المشاركة أو أرفقها يدويًا من زر 📎.";
     }
   });
 
