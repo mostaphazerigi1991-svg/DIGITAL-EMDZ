@@ -38,6 +38,7 @@ service cloud.firestore {
                     && request.resource.data.email is string
                     && request.resource.data.customerName is string
                     && request.resource.data.paymentMethod is string
+                    && request.resource.data.transactionId is string
                     && request.resource.data.status == 'pending';
       allow read, update, delete: if isAdmin();
     }
