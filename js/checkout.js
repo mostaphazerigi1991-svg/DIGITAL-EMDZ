@@ -3,12 +3,13 @@ import { getFirestore, collection, getDocs, query, where, serverTimestamp, addDo
 import { firebaseConfig } from "../firebase-config.js";
 
 const db=getFirestore(initializeApp(firebaseConfig));
-const esc=v=>String(v??"").replace(/[&<>\'"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[c]||c));
+const esc=v=>String(v??"").replace(/[&<>\'\"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[c]||c));
 const money=v=>`$${Number(v||0).toFixed(2)}`;
 const form=document.querySelector("#checkoutForm"),itemsBox=document.querySelector("#orderItems"),totalBox=document.querySelector("#orderTotal"),paySelect=document.querySelector("#paymentMethod"),payDetails=document.querySelector("#paymentDetails"),msg=document.querySelector("#formMessage");
 let cart=[];try{cart=JSON.parse(localStorage.getItem("demdz-cart")||"[]");if(!Array.isArray(cart))cart=[]}catch{cart=[]}
 let payments=[];
 const defaultPayments=[
+{id:"default-baridimob",name:"BaridiMob",account:"أضف رقم/حساب BaridiMob من لوحة الإدارة",instructions:"ادفع عبر BaridiMob ثم أكمل إرسال الطلب."},
 {id:"default-binance",name:"Binance",account:"766875587",instructions:"ادفع عبر Binance ثم أكمل إرسال الطلب."},
 {id:"default-redotpay",name:"RedotPay",account:"1576815123",instructions:"ادفع عبر RedotPay ثم أكمل إرسال الطلب."},
 {id:"default-bank",name:"تحويل بنكي",account:"00799999004232834408",instructions:"قم بالتحويل البنكي ثم أكمل إرسال الطلب."},
