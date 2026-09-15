@@ -6,8 +6,8 @@ const unique=(items)=>[...new Set(items.filter(Boolean).map(x=>String(x).trim())
 const escapeHtml=(name)=>String(name).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\"/g,"&quot;");
 const setOptions=(names)=>{if(!select)return;select.innerHTML='<option value="">اختر نوع الخدمة</option>'+unique(names).map(name=>`<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`).join("");};
 
-// Show the built-in services immediately. Do NOT use an old local blocked list here;
-// an old browser cache must never make the public service list disappear.
+// Always render the built-in services immediately. A previous admin "closed" state
+// must never blank the public service form; individual services are controlled by blockedServices.
 const localCustom=read(LOCAL);
 setOptions(unique([...DEFAULTS,...localCustom]));
 
@@ -22,17 +22,12 @@ async function loadRemoteServices(){
     const snap=await getDoc(doc(db,"settings","store"));
     const data=snap.exists()?snap.data():{};
     const custom=unique([...(Array.isArray(data.services)?data.services:[]),...localCustom]);
-    // Firebase is authoritative when the settings document exists.
-    // Local blocked state is only a fallback for offline/permission failures.
+    // Only individual services are filtered. Do not replace the public form with a closed message.
     const blocked=new Set(snap.exists()?unique(Array.isArray(data.blockedServices)?data.blockedServices:[]):read(BLOCKED));
     try{
       localStorage.setItem(LOCAL,JSON.stringify(custom.filter(x=>!DEFAULTS.includes(x))));
       localStorage.setItem(BLOCKED,JSON.stringify([...blocked]));
     }catch{}
-    if(data.serviceRequestsEnabled===false){
-      form.innerHTML='<div class="service-alert" style="text-align:center;padding:28px"><strong>🛑 استقبال طلبات الخدمات مغلق حاليًا</strong><br><span>يمكنك التواصل معنا مباشرة عبر WhatsApp أو Gmail.</span><div class="notify-actions"><a class="notify-btn notify-wa" href="https://wa.me/213770913494" target="_blank" rel="noopener">💬 WhatsApp</a><a class="notify-btn notify-mail" href="https://mail.google.com/mail/?view=cm&fs=1&to=digitalemdz%40gmail.com" target="_blank" rel="noopener">✉️ Gmail</a></div></div>';
-      return;
-    }
     setOptions(unique([...DEFAULTS,...custom]).filter(x=>!blocked.has(x)));
   }catch(error){
     console.warn("DIGITAL EMDZ services sync unavailable:",error);
