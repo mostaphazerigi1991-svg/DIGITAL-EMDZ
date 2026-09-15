@@ -1,22 +1,22 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs, query, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
+import { getFirestore, collection, getDocs, query, where, serverTimestamp, addDoc } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
 import { firebaseConfig } from "../firebase-config.js";
 
-const db = getFirestore(initializeApp(firebaseConfig));
+const db=getFirestore(initializeApp(firebaseConfig));
 const esc=v=>String(v??"").replace(/[&<>\'"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[c]||c));
 const money=v=>`$${Number(v||0).toFixed(2)}`;
-const form=document.querySelector("#checkoutForm"), itemsBox=document.querySelector("#orderItems"), totalBox=document.querySelector("#orderTotal"), paySelect=document.querySelector("#paymentMethod"), payDetails=document.querySelector("#paymentDetails"), msg=document.querySelector("#formMessage");
-let cart=[]; try{cart=JSON.parse(localStorage.getItem("demdz-cart")||"[]");if(!Array.isArray(cart))cart=[]}catch{cart=[]}
+const form=document.querySelector("#checkoutForm"),itemsBox=document.querySelector("#orderItems"),totalBox=document.querySelector("#orderTotal"),paySelect=document.querySelector("#paymentMethod"),payDetails=document.querySelector("#paymentDetails"),msg=document.querySelector("#formMessage");
+let cart=[];try{cart=JSON.parse(localStorage.getItem("demdz-cart")||"[]");if(!Array.isArray(cart))cart=[]}catch{cart=[]}
 let payments=[];
-const fallbackPayments=[
- {id:"binance-fallback",name:"Binance",account:"766875587",instructions:"أرسل المبلغ عبر Binance ثم أكمل إرسال الطلب."},
- {id:"redotpay-fallback",name:"RedotPay",account:"1576815123",instructions:"أرسل المبلغ عبر RedotPay ثم أكمل إرسال الطلب."},
- {id:"bank-fallback",name:"تحويل بنكي",account:"00799999004232834408",instructions:"قم بالتحويل ثم أكمل إرسال الطلب."},
- {id:"paypal-fallback",name:"PayPal",account:"الدفع عبر PayPal",instructions:"أكمل الدفع عبر PayPal ثم أرسل الطلب."}
+const defaultPayments=[
+{id:"default-binance",name:"Binance",account:"766875587",instructions:"ادفع عبر Binance ثم أكمل إرسال الطلب."},
+{id:"default-redotpay",name:"RedotPay",account:"1576815123",instructions:"ادفع عبر RedotPay ثم أكمل إرسال الطلب."},
+{id:"default-bank",name:"تحويل بنكي",account:"00799999004232834408",instructions:"قم بالتحويل البنكي ثم أكمل إرسال الطلب."},
+{id:"default-paypal",name:"PayPal",account:"الدفع عبر PayPal",instructions:"أكمل الدفع عبر PayPal ثم أكمل إرسال الطلب."}
 ];
 function renderOrder(){if(!cart.length){document.querySelector("#checkoutContent").innerHTML='<section class="checkout-card empty"><h2>السلة فارغة 🛒</h2><p>أضف منتجًا أولًا ثم ارجع لإتمام الطلب.</p><a class="btn primary" href="products.html">تصفح المنتجات</a></section>';return}itemsBox.innerHTML=cart.map(p=>`<div class="order-line"><span>${esc(p.name)}</span><strong>${money(p.price)}</strong></div>`).join("");totalBox.innerHTML=`<span>الإجمالي</span><strong>${money(cart.reduce((s,p)=>s+Number(p.price||0),0))}</strong>`}
-function renderPayments(){paySelect.innerHTML='<option value="">اختر وسيلة الدفع</option>'+payments.map(p=>`<option value="${esc(p.id)}">${esc(p.name)}</option>`).join("");if(!payments.length)msg.textContent="⚠️ لا توجد وسيلة دفع متاحة حاليًا."}
-async function loadPayments(){try{const s=await getDocs(query(collection(db,"paymentMethods"),where("enabled","==",true)));payments=s.docs.map(d=>({id:d.id,...d.data()}));if(!payments.length)payments=fallbackPayments;renderPayments()}catch(e){console.error("Payments:",e);payments=fallbackPayments;renderPayments();msg.textContent="ℹ️ تم عرض وسائل الدفع المتاحة افتراضيًا."}}
-paySelect?.addEventListener("change",()=>{const p=payments.find(x=>x.id===paySelect.value);if(!p){payDetails.hidden=true;payDetails.innerHTML="";return}payDetails.hidden=false;payDetails.innerHTML=`<strong>💳 ${esc(p.name)}</strong>${p.account?`<span class="payment-account">${esc(p.account)}</span>`:""}${p.instructions?`<span class="payment-instructions">${esc(p.instructions)}</span>`:""}`});
+function renderPayments(){paySelect.innerHTML='<option value="">اختر وسيلة الدفع</option>'+payments.map(p=>`<option value="${esc(p.id)}">${esc(p.name)}</option>`).join("");}
+async function loadPayments(){payments=[...defaultPayments];try{const s=await getDocs(query(collection(db,"paymentMethods"),where("enabled","==",true)));const remote=s.docs.map(d=>({id:d.id,...d.data()})).filter(p=>p.name);if(remote.length){const names=new Set(remote.map(p=>String(p.name).trim().toLowerCase()));payments=payments.filter(p=>!names.has(String(p.name).trim().toLowerCase()));payments=[...remote,...payments]}}catch(e){console.warn("Payment methods Firebase read failed; defaults kept.",e)}renderPayments();}
+paySelect?.addEventListener("change",()=>{const p=payments.find(x=>x.id===paySelect.value);if(!p){payDetails.hidden=true;payDetails.innerHTML="";return}payDetails.hidden=false;const account=p.account||p.accountNumber||p.phone||p.wallet||"";payDetails.innerHTML=`<strong>💳 ${esc(p.name)}</strong>${account?`<span class="payment-account">${esc(account)}</span>`:""}${p.instructions?`<span class="payment-instructions">${esc(p.instructions)}</span>`:""}`});
 form?.addEventListener("submit",async e=>{e.preventDefault();if(!cart.length)return;const name=document.querySelector("#customerName").value.trim(),email=document.querySelector("#email").value.trim(),phone=document.querySelector("#phone").value.trim(),p=payments.find(x=>x.id===paySelect.value),total=cart.reduce((s,x)=>s+Number(x.price||0),0);if(!p){msg.textContent="⚠️ اختر وسيلة الدفع أولًا.";return}msg.textContent="⏳ جارٍ إرسال الطلب...";const orderItems=cart.map(x=>({productId:String(x.id||""),name:String(x.name||""),price:Number(x.price||0),quantity:1}));try{const ref=await addDoc(collection(db,"orders"),{customerName:name,email,phone,paymentMethod:p.name,transactionId:"",proofUrl:"",items:orderItems,total,status:"pending",createdAt:serverTimestamp()});localStorage.removeItem("demdz-cart");document.querySelector("#checkoutContent").style.display="none";document.querySelector("#success").style.display="block";document.querySelector("#successText").innerHTML=`رقم طلبك: <b>${esc(ref.id)}</b><br>احتفظ بهذا الرقم. سيتم مراجعة الطلب من الإدارة قبل التسليم.`}catch(err){console.error(err);msg.textContent=err?.code==="permission-denied"?"⚠️ لا يمكن إرسال الطلب حاليًا. يجب نشر قواعد Firestore الخاصة بالطلبات في Firebase.":`⚠️ تعذر إرسال الطلب: ${err?.message||"حدث خطأ"}`)}});
 renderOrder();loadPayments();
